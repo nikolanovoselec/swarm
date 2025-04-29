@@ -1,0 +1,15 @@
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Zurich
+    volumes:
+      - /mnt/docker/_swarm_configs/radarr:/config
+      - /mnt/synology:/data
+    ports:
+      - 8309:7878
