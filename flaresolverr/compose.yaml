@@ -1,0 +1,14 @@
+services:
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: pantlesscoding/flaresolverr:latest
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - CAPTCHA_SOLVER=none
+      - TZ=Europe/Zurich
+      - DRIVER=nodriver
+      - no_sandbox=true
+    ports:
+      - 8191:8191
