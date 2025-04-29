@@ -1,0 +1,81 @@
+version: "3.4"
+
+services:
+
+  postgresql:
+    image: docker.io/library/postgres:16-alpine
+    deploy:
+     mode: replicated
+     replicas: 1
+     placement:
+       constraints: [node.hostname == swarm-worker1]
+    volumes:
+      - /mnt/docker/_swarm_configs/authentik/database/authentik_database/_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+#      PGDATA: /var/lib/postgresql/data/db
+      
+  redis:
+    image: docker.io/library/redis:alpine
+    deploy:
+     mode: replicated
+     replicas: 1
+     placement:
+       constraints: [node.hostname == swarm-worker1]
+    volumes:
+      - /mnt/docker/_swarm_configs/authentik/redis:/data
+      
+  server:
+    image: ghcr.io/goauthentik/server:latest
+    deploy:
+     mode: replicated
+     replicas: 1
+     placement:
+       constraints: [node.hostname == swarm-worker1]
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+    volumes:
+      - /mnt/docker/_swarm_configs/authentik/media:/media
+      - /mnt/docker/_swarm_configs/authentik/custom-templates:/templates
+    ports:
+      - 5480:9000
+      - 5443:9443
+    depends_on:
+      - postgresql
+      - redis
+      
+  worker:
+    image: ghcr.io/goauthentik/server:latest
+    deploy:
+     mode: replicated
+     replicas: 1
+     placement:
+       constraints: [node.hostname == swarm-worker1]
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/docker/_swarm_configs/authentik/media:/media
+      - /mnt/docker/_swarm_configs/authentik/backup:/backup
+      - /mnt/docker/_swarm_configs/authentik/certs:/certs
+      - /mnt/docker/_swarm_configs/authentik/custom-templates:/templates
+    depends_on:
+      - postgresql
+      - redis
