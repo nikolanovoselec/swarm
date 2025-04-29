@@ -1,0 +1,15 @@
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Zurich
+    volumes:
+      - /mnt/docker/_swarm_configs/sonarr:/config
+      - /mnt/synology:/data
+    ports:
+      - 8988:8989
