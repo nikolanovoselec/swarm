@@ -1,0 +1,16 @@
+services:
+    maintainerr:
+        image: ghcr.io/jorenn92/maintainerr:latest # or jorenn92/maintainerr:latest
+        deploy:
+          placement:
+            constraints: [node.role == worker]
+        user: 0:0
+        volumes:
+          - type: bind
+            source: /mnt/docker/_swarm_configs/maintainerr
+            target: /opt/data
+        environment:
+          - TZ=Europe/Zurich
+#      - DEBUG=true # uncomment to enable debug logs
+        ports:
+          - 6246:6246
