@@ -1,0 +1,14 @@
+services:
+  ombi:
+    image: lscr.io/linuxserver/ombi:latest
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Zurich
+    volumes:
+      - /mnt/docker/_swarm_configs/ombi:/config
+    ports:
+      - 3579:3579
