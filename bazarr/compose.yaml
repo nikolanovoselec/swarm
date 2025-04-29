@@ -1,0 +1,15 @@
+services:
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Zurich
+    volumes:
+      - /mnt/docker/_swarm_configs/bazarr:/config
+      - /mnt/synology:/data
+    ports:
+      - 6767:6767
